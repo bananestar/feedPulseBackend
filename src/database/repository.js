@@ -294,5 +294,28 @@ async function createRepository(
       const [result] = await db.query(query, whereParams);
       return result.affectedRows;
     },
+    /**
+     *! Trouve un enregistrement par ses conditions ou le crée s'il n'existe pas
+     * @async
+     * @function findOrCreate
+     * @param {object} options - Options pour la recherche ou la création
+     * @param {object} options.where - Conditions pour trouver l'enregistrement
+     * @param {object} options.defaults - Données par défaut pour créer l'enregistrement s'il n'existe pas
+     * @returns {Promise<[object, boolean]>} - Tableau contenant l'enregistrement trouvé ou créé et un booléen indiquant s'il a été créé
+     * @example
+     * TODO : Trouver ou créer un utilisateur par son email
+     * const [user, created] = await usersRepo.findOrCreate({
+     * where: { email: 'joeDoe@exemple.com' },
+     * defaults: { username: 'joeDoe', password: 'hashed_password' }
+     * });
+     */
+    async findOrCreate({ where = {}, defaults = {} } = {}) {
+      const found = await this.findOne({ where });
+      if (found) return [found, false];
+
+      const data = { ...where, ...defaults };
+      const created = await this.create(data);
+      return [created, true];
+    },
   };
 }
