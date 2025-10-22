@@ -216,5 +216,33 @@ async function createRepository(
       const [rows] = await db.query(query, [pkValue]);
       return rows[0] || null;
     },
+    /**
+     *! Crée un nouvel enregistrement dans la table
+     *
+     * @async
+     * @function create
+     * @param {object} data - Données de l'enregistrement à créer
+     * @returns {Promise<object>} - Enregistrement créé
+     *
+     * @example
+     * TODO : Créer un nouvel utilisateur
+     * const newUser = await usersRepo.create({
+     *   username: 'johndoe',
+     *   email: 'johndoe@exemple.com',
+     *   password: 'hashed_password',
+     * });
+     *
+     */
+    async create(data) {
+      const columns = Object.keys(data);
+      const placeholders = columns.map(() => '?').join(', ');
+
+      const sql = `INSERT INTO ${tableName} (${columns.join(
+        ', '
+      )}) VALUES (${placeholders})`;
+      const [result] = await db.query(sql, Object.values(data));
+
+      return this.findByPk(result.insertId || data[pk]);
+    },
   };
 }
