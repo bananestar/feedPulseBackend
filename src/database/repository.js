@@ -79,7 +79,7 @@ async function createRepository(
      * @returns {Promise<object[]>} - Tableau des enregistrements trouvés.
      *
      * @example
-     * Récupérer tous les flux actifs, triés par date descendante, limités à 20
+     * TODO : Récupérer tous les flux actifs, triés par date descendante, limités à 20
      * const feeds = await feedsRepo.findAll({
      *   where: { active: true },
      *   limit: 20,
@@ -87,7 +87,7 @@ async function createRepository(
      * });
      *
      * @example
-     * Récupérer les 10 premiers éléments d'une catégorie
+     * TODO : Récupérer les 10 premiers éléments d'une catégorie
      * const items = await itemsRepo.findAll({
      *   where: { category: 'science' },
      *   limit: 10
@@ -101,6 +101,78 @@ async function createRepository(
       return rows[0] || null;
     },
     /**
+     *! Récupère plusieurs enregistrements de la table avec le total.
+     *! Permet de filtrer, trier et paginer les résultats.
+     *
+     * @async
+     * @function findAndCountAll
+     * @param {object} [options={}] - Options de requête.
+     * @param {object} [options.where={}] - Filtres à appliquer sur les colonnes (clé → valeur).
+     *    Exemple : `{ active: true, category: 'news' }` donnera `WHERE active = ? AND category = ?`.
+     * @param {number} [options.limit] - Nombre maximum de lignes à retourner.
+     * @param {number} [options.offset] - Nombre de lignes à ignorer avant de commencer à retourner les résultats.
+     * @param {string|Array} [options.order] - Clause de tri SQL (`"column ASC"` ou `"column DESC"`). Peut être une chaîne ou un tableau de chaînes.
+     * @returns {Promise<{ rows: object[], count: number }>} - Objet avec tableau des enregistrements trouvés et total.
+     *
+     * @example
+     * TODO : Récupérer tous les flux actifs, triés par date descendante, limités à 20
+     * const feeds = await feedsRepo.findAndCountAll({
+     *   where: { active: true },
+     *   limit: 20,
+     *   offset: 0,
+     *   order: ['created_at DESC', 'title ASC']
+     * });
+     *
+     * @example
+     * TODO : Récupérer les 10 premiers éléments d'une catégorie, triés par date et titre
+     * const { count, rows } = await itemsRepo.findAndCountAll({
+     *   where: { category: 'science' },
+     *   limit: 10,
+     *   offset: 0,
+     *   order: ['created_at DESC', 'title ASC']
+     * });
+     */
+    async findAndCountAll({ where = {}, limit, offset, order } = {}) {
+      const { sql, params } = buildWhere(where);
+      const withParanoid = addParanoid(sql);
+
+      // Gestion du tri dynamique
+      let orderClause = '';
+      if (Array.isArray(order)) {
+        // Si order est un tableau, on genère chaque condition de tri
+        orderClause = order
+          .map((o) => {
+            // Validation du order
+            const [column, direction] = o.split(' ').map((str) => str.trim());
+            return `${column} ${direction === 'DESC' ? 'DESC' : 'ASC'}`;
+          })
+          .join(', ');
+      } else if (typeof order === 'string') {
+        orderClause = order;
+      }
+
+      // Requête pour récupérer les enregistrements
+      const dataClauses = [];
+      if (withParanoid) dataClauses.push(withParanoid);
+      if (orderClause) dataClauses.push(`ORDER BY ${orderClause}`);
+      dataClauses.push(`LIMIT ${limit || 100}`); // Limite par défaut à 100
+      dataClauses.push(`OFFSET ${offset || 0}`);
+
+      const dataQuery = `SELECT * FROM ${tableName} ${dataClauses.join(' ')}`;
+
+      // Requête pour compter le total
+      const countQuery = `SELECT COUNT(*) AS count FROM ${tableName} ${withParanoid}`;
+
+      // Exécution des deux requêtes en parallèle
+      const [data, countResult] = await Promise.all([
+        db.query(dataQuery, params),
+        db.query(countQuery, params),
+      ]);
+
+      // Retour des résultats
+      return { count: countResult[0].count, rows: data };
+    },
+    /**
      *! Récupère un seul enregistrement de la table.
      *! Permet de filtrer les résultats via une clause WHERE.
      *
@@ -112,11 +184,11 @@ async function createRepository(
      * @returns {Promise<object|null>} - Enregistrement trouvé ou null si aucun.
      *
      * @example
-     * Récupérer un utilisateur par son ID
+     * TODO : Récupérer un utilisateur par son ID
      * const user = await usersRepo.findOne({ where: { id: 42 } });
      *
      * @example
-     * Récupérer un article actif par son slug
+     * TODO : Récupérer un article actif par son slug
      * const article = await articlesRepo.findOne({ where: { slug: 'mon-article', active: true } });
      *
      */
