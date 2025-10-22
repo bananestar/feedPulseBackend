@@ -273,5 +273,26 @@ async function createRepository(
       const [result] = await db.query(query, [...setParams, ...whereParams]);
       return result.affectedRows;
     },
+    /**
+     *! Supprime un ou plusieurs enregistrements de la table
+     *
+     * @async
+     * @function destroy
+     * @param {object} where - Conditions pour sélectionner les enregistrements à supprimer (clé → valeur)
+     * @returns {Promise<number>} - Nombre d'enregistrements supprimés
+     *
+     * @example
+     * TODO : Supprimer tous les articles d'une catégorie spécifique
+     * const deletedCount = await articlesRepo.destroy({
+     *   where: { category: 'obsolete' }
+     * });
+     */
+    async destroy({ where }) {
+      const { sql: whereSql, params: whereParams } = buildWhere(where);
+      const withParanoid = addParanoid(whereSql);
+      const query = `DELETE FROM ${tableName} ${withParanoid}`;
+      const [result] = await db.query(query, whereParams);
+      return result.affectedRows;
+    },
   };
 }
