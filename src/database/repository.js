@@ -244,5 +244,34 @@ async function createRepository(
 
       return this.findByPk(result.insertId || data[pk]);
     },
+    /**
+     *! Met à jour un ou plusieurs enregistrement existant dans la table
+     *
+     * @async
+     * @function update
+     * @param {object} data - Données à mettre à jour (clé → valeur)
+     * @param {object} where - Conditions pour sélectionner les enregistrements à mettre à jour (clé → valeur)
+     * @returns {Promise<number>} - Nombre d'enregistrements mis à jour
+     *
+     * @example
+     * TODO : Mettre à jour le statut actif de plusieurs utilisateurs
+     * const updatedCount = await usersRepo.update(
+     *   { active: false },
+     *   { where: { last_login: null } }
+     * );
+     *
+     */
+    async update(data, { where }) {
+      const setKeys = Object.keys(data);
+      const setSql = setKeys.map((k) => `${k}=?`).join(', ');
+      const setParams = setKeys.map((k) => data[k]);
+
+      const { sql: whereSql, params: whereParams } = buildWhere(where);
+      const withParanoid = addParanoid(whereSql);
+
+      const query = `UPDATE ${tableName} SET ${setSql} ${withParanoid}`;
+      const [result] = await db.query(query, [...setParams, ...whereParams]);
+      return result.affectedRows;
+    },
   };
 }
