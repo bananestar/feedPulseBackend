@@ -45,8 +45,8 @@ async function update(id, data) {
   try {
     const feed = await feedsRepo.findByPk(id);
     if (!feed) throw new Error('Flux non trouvé');
-    const updatedFeed = await feedsRepo.update(data, { where: { id } });
-    return updatedFeed;
+    await feedsRepo.update(data, { where: { id } });
+    return feedsRepo.findByPk(id);
   } catch (err) {
     throw new Error(`Erreur lors de la mise à jour du flux : ${err.message}`);
   }
