@@ -14,4 +14,7 @@ router.patch('/:id', feedsController.updateFeed);
 //? Supprimer un feed
 router.delete('/:id', feedsController.deleteFeed);
 
+//? Détail d’un feed
+router.get('/:id', feedsController.getFeed);
+
 module.exports = router;

@@ -73,6 +73,21 @@ const feedController = {
       return res.status(status).json(new Res(err.message));
     }
   },
+  /**
+   *! Récupère le détail d’un flux
+   * @param {Request} req
+   * @param {Response} res
+   */
+  getFeed: async (req, res) => {
+    try {
+      const feed = await feedsService.getById(req.params.id);
+      return res.status(200).json(new SuccessObjectResponse(feed));
+    } catch (err) {
+      const status = /non trouvé/i.test(err.message) ? 404 : 400;
+      const Res = status === 404 ? NotFoundErrorResponse : ErrorResponse;
+      return res.status(status).json(new Res(err.message));
+    }
+  },
 };
 
 module.exports = feedController;
