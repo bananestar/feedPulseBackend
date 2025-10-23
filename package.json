@@ -22,9 +22,10 @@
 	"author": "Simon Vander Linden",
 	"license": "MIT",
 	"dependencies": {
-		"axios": "^1.7.0",
+		"axios": "^1.12.2",
 		"dotenv": "^17.2.3",
 		"express": "^4.19.0",
+		"fast-xml-parser": "^5.3.0",
 		"mysql2": "^3.15.2"
 	},
 	"devDependencies": {
